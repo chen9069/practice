@@ -1,5 +1,4 @@
 class TrieNode {
-    // Initialize your data structure here.
     char val;
     boolean isLeaf;
     TrieNode[] children;

@@ -15,8 +15,8 @@ public class Test {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String expression = "10+(21-32)*(43/(54+65-76)*87)/98" + Character.MIN_VALUE + Character.MIN_VALUE + "+0+0";
-		System.out.println("Expression: " + expression);
+		String expression = "10+(21-32)*(43/(54+65-76)*87)/98";
+        System.out.println("Expression: " + expression);
 		try {
 			System.out.println("LL1:");
 			InputStream in = new ByteArrayInputStream(expression.getBytes());

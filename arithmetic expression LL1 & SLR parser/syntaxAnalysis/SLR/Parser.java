@@ -45,27 +45,26 @@ import syntaxAnalysis.Lexer;
  * I15 = {F->(E).}																																																		reduce: follow(F):=r7
  */
 public class Parser {
+	private Lexer Scanner;
+	private Token curToken = null;
 	// G = {non_Terminal, Terminal, Rules, Start}
 	private Set<String> non_terminals;
 	private Set<String> terminals;
-	// scanner use
-	private Lexer tokenizer;
-	private Token curToken = null;
-	// parser use
+	// for SLR parser
 	private Token curNum;
 	private String curSymbol;
 	private Stack<String> symbols;
 	private Stack<Closure> statuses;
 	private Stack<Expression> expressions;
 	public Parser(InputStream in) throws IOException {
-		tokenizer = new Lexer(in);
+		Scanner = new Lexer(in);
 	}
 	public Parser(Lexer tokenizer) {
-		this.tokenizer = tokenizer;
+		this.Scanner = tokenizer;
 	}
 	private boolean consume() throws TokenizeException {
-		if (tokenizer.hasNext()) {
-			curToken = tokenizer.nextToken();
+		if (Scanner.hasNext()) {
+			curToken = Scanner.nextToken();
 			curSymbol = getSymbol(curToken);
 			return true;
 		}
@@ -143,7 +142,7 @@ public class Parser {
 			statuses.pop();
 		}
 		if (!check.equals(rule.right))
-			throw new ParseException(tokenizer.getCurIndex(), rule.left + "->" + check, tokenizer.getCurString());
+			throw new ParseException(Scanner.getCurIndex(), rule.left + "->" + check, Scanner.getCurString());
 		switch (rule.id) {
 		case 1:
 			BinaryExpr binaryExpr = new BinaryExpr();
@@ -217,7 +216,7 @@ public class Parser {
 					reduceBy(curStat.reduce(curSymbol));
 				}
 			} else {
-				throw new ParseException(tokenizer.getCurIndex(), curToken, tokenizer.getCurString());
+				throw new ParseException(Scanner.getCurIndex(), curToken, Scanner.getCurString());
 			}
 		}
 		return expressions.pop();

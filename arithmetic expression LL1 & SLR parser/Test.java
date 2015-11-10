@@ -1,8 +1,7 @@
-package sementicAnalysis;
-
 import java.io.*;
-import java.util.regex.Pattern;
 
+import sementicAnalysis.Evaluator;
+import sementicAnalysis.Printer;
 import syntaxAnalysis.ParseException;
 import syntaxAnalysis.TokenizeException;
 
@@ -17,8 +16,9 @@ public class Test {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		String expression = "10+(21-32)*(43/(54+65-76)*87)/98" + Character.MIN_VALUE + Character.MIN_VALUE + "+0+0";
-		System.out.println(expression);
+		System.out.println("Expression: " + expression);
 		try {
+			System.out.println("LL1:");
 			InputStream in = new ByteArrayInputStream(expression.getBytes());
 			syntaxAnalysis.LL1.Parser parser = new syntaxAnalysis.LL1.Parser(in);
 			Expression expr = parser.parse();
@@ -34,7 +34,8 @@ public class Test {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		try {
+		try {			
+			System.out.println("SLR:");
 			InputStream in = new ByteArrayInputStream(expression.getBytes());
 			syntaxAnalysis.SLR.Parser parser = new syntaxAnalysis.SLR.Parser(in);
 			Expression expr =	parser.parse();

@@ -15,7 +15,7 @@ public class Test {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String expression = "10+(21-32)*(43/(54+65-76)*87)/98";
+		String expression = "10 +(21  -32	)*	((((4  3 ))    )/(	5  4+6	5-7 6)* 87) /9 8";
         System.out.println("Expression: " + expression);
 		try {
 			System.out.println("LL1:");

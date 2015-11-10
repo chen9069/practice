@@ -50,12 +50,6 @@ public class Parser {
 	// G = {non_Terminal, Terminal, Rules, Start}
 	private Set<String> non_terminals;
 	private Set<String> terminals;
-	// for SLR parser
-	private Token curNum;
-	private String curSymbol;
-	private Stack<String> symbols;
-	private Stack<Closure> statuses;
-	private Stack<Expression> expressions;
 	public Parser(InputStream in) throws IOException {
 		Scanner = new Lexer(in);
 	}
@@ -65,15 +59,12 @@ public class Parser {
 	private boolean consume() throws TokenizeException {
 		if (Scanner.hasNext()) {
 			curToken = Scanner.nextToken();
-			curSymbol = getSymbol(curToken);
 			return true;
 		}
 		return false;
 	}
 	public void initialize() {
-		this.symbols = new Stack<String>();
-		this.statuses = new Stack<Closure>();
-		this.expressions = new Stack<Expression>();
+		this.terminals = new HashSet<String>();
 		this.non_terminals = new HashSet<String>();
 		setSymbols();
 		setGrammars();
@@ -84,6 +75,13 @@ public class Parser {
 		this.non_terminals.add("E");
 		this.non_terminals.add("T");
 		this.non_terminals.add("F");
+		this.terminals.add("(");
+		this.terminals.add(")");
+		this.terminals.add("+");
+		this.terminals.add("-");
+		this.terminals.add("*");
+		this.terminals.add("/");
+		this.terminals.add("i");
 	}
 	public void setGrammars() { 
 		//I0 = {S->.E | E->.E+T | E->.E-T | E->.T | T->.T*F | T->.T/F | T->.F | F->.(E) | F->.int}		GOTO = {E:=I1, T:=I2, F:=I3, (:=I4, int:=I5}
@@ -135,7 +133,7 @@ public class Parser {
 		Rule.getInstance(7).setRule("F", "(E)");
 		Rule.getInstance(8).setRule("F", "i");
 	}
-	private void reduceBy (Rule rule) throws ParseException {
+	private String reduceBy (Rule rule, Stack<Closure> statuses, Stack<String> symbols, Stack<Expression> expressions) throws ParseException {
 		String check = "";
 		for (int i = 0; i < rule.right.length(); i ++) {
 			check = symbols.pop() + check;
@@ -143,46 +141,33 @@ public class Parser {
 		}
 		if (!check.equals(rule.right))
 			throw new ParseException(Scanner.getCurIndex(), rule.left + "->" + check, Scanner.getCurString());
+		BinaryExpr binaryExpr = new BinaryExpr();
 		switch (rule.id) {
 		case 1:
-			BinaryExpr binaryExpr = new BinaryExpr();
-			binaryExpr.right = expressions.pop();
-			binaryExpr.left = expressions.pop();
 			binaryExpr.op = new Operator(TokenType.PLUS);
-			expressions.push(binaryExpr);
 			break;
 		case 2:
-			binaryExpr = new BinaryExpr();
-			binaryExpr.right = expressions.pop();
-			binaryExpr.left = expressions.pop();
 			binaryExpr.op = new Operator(TokenType.MINUS);
-			expressions.push(binaryExpr);
 			break;
 		case 4:
-			binaryExpr = new BinaryExpr();
-			binaryExpr.right = expressions.pop();
-			binaryExpr.left = expressions.pop();
 			binaryExpr.op = new Operator(TokenType.MULTIPLY);
-			expressions.push(binaryExpr);
 			break;
 		case 5:
-			binaryExpr = new BinaryExpr();
-			binaryExpr.right = expressions.pop();
-			binaryExpr.left = expressions.pop();
 			binaryExpr.op = new Operator(TokenType.DIVIDE);
-			expressions.push(binaryExpr);
-			break;
-		case 8:
-			Constant constant = new Constant(curNum);
-			expressions.push(constant);
 			break;
 		default:
-			break;
+			return rule.left;
 		}
-		curSymbol = rule.left;
+		binaryExpr.right = expressions.pop();
+		binaryExpr.left = expressions.pop();
+		expressions.push(binaryExpr);
+		return rule.left;
 	}
 	private boolean isTerminal(String symbol) {
-		return !this.non_terminals.contains(symbol);
+		return this.terminals.contains(symbol);
+	}
+	private boolean nonTerminal(String symbol) {
+		return this.non_terminals.contains(symbol);
 	}
 	private String getSymbol(Token token) {
 		switch(token.getType()) {
@@ -196,8 +181,12 @@ public class Parser {
 	}
 	public Expression parse() throws TokenizeException, ParseException {
 		initialize();
+		Stack<String> symbols = new Stack<String>();
+		Stack<Closure> statuses = new Stack<Closure>();
+		Stack<Expression> expressions = new Stack<Expression>();
 		statuses.push(Closure.getInstance(0));
 		consume();
+		String curSymbol = getSymbol(curToken);
 		while(!(curToken.isEnd() && statuses.peek().id == 0)) {
 			Closure curStat = statuses.peek();
 			if (curStat.canShift(curSymbol)) {
@@ -205,15 +194,14 @@ public class Parser {
 				statuses.push(curStat.shift(curSymbol));
 				symbols.push(curSymbol);
 				if (curToken.isNumber())
-					curNum = curToken;
-				if (!isTerminal(curSymbol))
-					curSymbol = getSymbol(curToken);
-				else
+					expressions.push(new Constant(curToken));
+				if (!nonTerminal(curSymbol)) 
 					consume();
+				curSymbol = getSymbol(curToken);
 			} else if (curStat.canReduce(curSymbol)) {
 				while (curStat.canReduce(curSymbol)) {
 					//System.out.println("reduce: r" + curStat.reduce(curSymbol).id);
-					reduceBy(curStat.reduce(curSymbol));
+					curSymbol = reduceBy(curStat.reduce(curSymbol), statuses, symbols, expressions);
 				}
 			} else {
 				throw new ParseException(Scanner.getCurIndex(), curToken, Scanner.getCurString());

@@ -55,11 +55,9 @@ public class SLRParser extends Parser{
 	}
 	public SLRParser(InputStream in) throws IOException {
 		super(in);
-		// TODO Auto-generated constructor stub
 	}
 	public SLRParser(String s) throws IOException {
 		super(s);
-		// TODO Auto-generated constructor stub
 	}
 	public Expression parse() throws TokenizeException, ParseException {
 		initialize();

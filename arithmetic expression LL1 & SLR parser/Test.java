@@ -16,7 +16,7 @@ public class Test {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String s = "10 +(21  -32	)*	((((4  3 ))    )/(	5  4+6	5-  76)* 8   7) /9 8"+Character.MIN_VALUE + "1+2 + 3";
+		String s = "10 +(21  -32	)*	((((4  3 ))    )/(	5  4+6	5-  76)* 8   7) /9 8";
 		System.out.println("Expression: " + s);
 		InputStream in;
 		Expression expr;

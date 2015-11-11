@@ -31,6 +31,9 @@ public class Parser {
 	public Parser(Lexer scanner) {
 		this.scanner = scanner;
 	}
+	public Parser(String s) throws IOException {
+		this.scanner = new Lexer(s);
+	}
 	private boolean consume() throws TokenizeException {
 		if (scanner.hasNext()) {
 			curToken = scanner.nextToken();

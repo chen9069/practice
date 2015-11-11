@@ -15,12 +15,12 @@ public class Test {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String expression = "10 +(21  -32	)*	((((4  3 ))    )/(	5  4+6	5-7 6)* 87) /9 8";
-        System.out.println("Expression: " + expression);
+		String s = "10 +(21  -32	)*	((((4  3 ))    )/(	5  4+6	5-  76)* 8   7) /9 8";
+		System.out.println("Expression: " + s);
 		try {
 			System.out.println("LL1:");
-			InputStream in = new ByteArrayInputStream(expression.getBytes());
-			syntaxAnalysis.LL1.Parser parser = new syntaxAnalysis.LL1.Parser(in);
+			InputStream in = new ByteArrayInputStream(s.getBytes());
+			syntaxAnalysis.LL1.Parser parser = new syntaxAnalysis.LL1.Parser(s);
 			Expression expr = parser.parse();
 			expr.accept(Printer.getInstance());
 			System.out.println("=" + expr.accept(Evaluator.getInstance()));
@@ -36,7 +36,7 @@ public class Test {
 		}
 		try {			
 			System.out.println("SLR:");
-			InputStream in = new ByteArrayInputStream(expression.getBytes());
+			InputStream in = new ByteArrayInputStream(s.getBytes());
 			syntaxAnalysis.SLR.Parser parser = new syntaxAnalysis.SLR.Parser(in);
 			Expression expr =	parser.parse();
 			expr.accept(Printer.getInstance());

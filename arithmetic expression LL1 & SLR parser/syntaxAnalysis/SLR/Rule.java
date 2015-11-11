@@ -3,8 +3,6 @@ package syntaxAnalysis.SLR;
 import java.util.HashMap;
 import java.util.Map;
 
-import syntaxAnalysis.Token;
-
 public class Rule {
 	public int id;
 	public String left;

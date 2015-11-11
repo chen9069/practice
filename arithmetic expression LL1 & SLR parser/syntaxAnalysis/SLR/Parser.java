@@ -45,20 +45,23 @@ import syntaxAnalysis.Lexer;
  * I15 = {F->(E).}																																																		reduce: follow(F):=r7
  */
 public class Parser {
-	private Lexer Scanner;
+	private Lexer scanner;
 	private Token curToken = null;
 	// G = {non_Terminal, Terminal, Rules, Start}
 	private Set<String> non_terminals;
 	private Set<String> terminals;
 	public Parser(InputStream in) throws IOException {
-		Scanner = new Lexer(in);
+		scanner = new Lexer(in);
 	}
 	public Parser(Lexer tokenizer) {
-		this.Scanner = tokenizer;
+		this.scanner = tokenizer;
+	}
+	public Parser(String s) throws IOException {
+		this.scanner = new Lexer(s);
 	}
 	private boolean consume() throws TokenizeException {
-		if (Scanner.hasNext()) {
-			curToken = Scanner.nextToken();
+		if (scanner.hasNext()) {
+			curToken = scanner.nextToken();
 			return true;
 		}
 		return false;
@@ -140,7 +143,7 @@ public class Parser {
 			statuses.pop();
 		}
 		if (!check.equals(rule.right))
-			throw new ParseException(Scanner.getCurIndex(), rule.left + "->" + check, Scanner.getCurString());
+			throw new ParseException(scanner.getCurIndex(), rule.left + "->" + check, scanner.getCurString());
 		BinaryExpr binaryExpr = new BinaryExpr();
 		switch (rule.id) {
 		case 1:
@@ -190,7 +193,6 @@ public class Parser {
 		while(!(curToken.isEnd() && statuses.peek().id == 0)) {
 			Closure curStat = statuses.peek();
 			if (curStat.canShift(curSymbol)) {
-				//System.out.println("shift: " + curSymbol);
 				statuses.push(curStat.shift(curSymbol));
 				symbols.push(curSymbol);
 				if (curToken.isNumber())
@@ -199,12 +201,9 @@ public class Parser {
 					consume();
 				curSymbol = getSymbol(curToken);
 			} else if (curStat.canReduce(curSymbol)) {
-				while (curStat.canReduce(curSymbol)) {
-					//System.out.println("reduce: r" + curStat.reduce(curSymbol).id);
 					curSymbol = reduceBy(curStat.reduce(curSymbol), statuses, symbols, expressions);
-				}
 			} else {
-				throw new ParseException(Scanner.getCurIndex(), curToken, Scanner.getCurString());
+				throw new ParseException(scanner.getCurIndex(), curToken, scanner.getCurString());
 			}
 		}
 		return expressions.pop();

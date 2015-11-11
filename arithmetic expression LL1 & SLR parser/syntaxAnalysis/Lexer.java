@@ -82,13 +82,11 @@ public class Lexer {
 
 	private boolean readNext() throws IOException {
 		int c = -1;
+		index ++;
 		if (!isReadFromString)
 			c = in.read();
-		else if (index+1 < input.length)
-			c = input[index+1];
-		else 
-			c = -1;
-		index ++;
+		else if (index < input.length)
+			c = input[index];
 		if (c == -1) {
 			curChar = Character.MIN_VALUE;
 			return false;

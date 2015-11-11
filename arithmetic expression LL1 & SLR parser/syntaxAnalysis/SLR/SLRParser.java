@@ -12,6 +12,7 @@ import abstractSyntaxTrees.Expression;
 import abstractSyntaxTrees.Operator;
 
 import syntaxAnalysis.ParseException;
+import syntaxAnalysis.Parser;
 import syntaxAnalysis.Token;
 import syntaxAnalysis.TokenType;
 import syntaxAnalysis.TokenizeException;
@@ -44,36 +45,56 @@ import syntaxAnalysis.Lexer;
  * I14 = {T->T/F.}																																																		reduce: follow(T):=r5
  * I15 = {F->(E).}																																																		reduce: follow(F):=r7
  */
-public class Parser {
-	private Lexer scanner;
-	private Token curToken = null;
+public class SLRParser extends Parser{
 	// G = {non_Terminal, Terminal, Rules, Start}
 	private Set<String> non_terminals;
 	private Set<String> terminals;
-	public Parser(InputStream in) throws IOException {
-		scanner = new Lexer(in);
+	public SLRParser(Lexer scanner) {
+		super(scanner);
+		// TODO Auto-generated constructor stub
 	}
-	public Parser(Lexer tokenizer) {
-		this.scanner = tokenizer;
+	public SLRParser(InputStream in) throws IOException {
+		super(in);
+		// TODO Auto-generated constructor stub
 	}
-	public Parser(String s) throws IOException {
-		this.scanner = new Lexer(s);
+	public SLRParser(String s) throws IOException {
+		super(s);
+		// TODO Auto-generated constructor stub
 	}
-	private boolean consume() throws TokenizeException {
-		if (scanner.hasNext()) {
-			curToken = scanner.nextToken();
-			return true;
+	public Expression parse() throws TokenizeException, ParseException {
+		initialize();
+		Stack<String> symbols = new Stack<String>();
+		Stack<Closure> statuses = new Stack<Closure>();
+		Stack<Expression> expressions = new Stack<Expression>();
+		statuses.push(Closure.getInstance(0));
+		consume();
+		String curSymbol = getSymbol(super.curToken);
+		while(!(curToken.isEnd() && statuses.peek().id == 0)) {
+			Closure curStat = statuses.peek();
+			if (curStat.canShift(curSymbol)) {
+				statuses.push(curStat.shift(curSymbol));
+				symbols.push(curSymbol);
+				if (curToken.isNumber())
+					expressions.push(new Constant(curToken));
+				if (!nonTerminal(curSymbol)) 
+					consume();
+				curSymbol = getSymbol(curToken);
+			} else if (curStat.canReduce(curSymbol)) {
+					curSymbol = reduceBy(curStat.reduce(curSymbol), statuses, symbols, expressions);
+			} else {
+				throw new ParseException(scanner.getCurIndex(), curToken, scanner.getCurString());
+			}
 		}
-		return false;
+		return expressions.pop();
 	}
-	public void initialize() {
+	private void initialize() {
 		this.terminals = new HashSet<String>();
 		this.non_terminals = new HashSet<String>();
 		setSymbols();
 		setGrammars();
 		setRules();
 	}
-	public void setSymbols() {
+	private void setSymbols() {
 		this.non_terminals.add("S");
 		this.non_terminals.add("E");
 		this.non_terminals.add("T");
@@ -86,7 +107,7 @@ public class Parser {
 		this.terminals.add("/");
 		this.terminals.add("i");
 	}
-	public void setGrammars() { 
+	private void setGrammars() { 
 		//I0 = {S->.E | E->.E+T | E->.E-T | E->.T | T->.T*F | T->.T/F | T->.F | F->.(E) | F->.int}		GOTO = {E:=I1, T:=I2, F:=I3, (:=I4, int:=I5}
 		Closure.getInstance(0).setShift("E", 1).setShift("T", 2).setShift("F", 3).setShift("(", 4).setShift("i", 5);
 		//I1 = {S->E. | E->E.+T | E->E.-T}		GOTO = {+:=I6, -:=I7} 	reduce: follow(S):=r0
@@ -125,7 +146,7 @@ public class Parser {
 		//I15 = {F->(E).}		reduce: follow(F):=r7
 		Closure.getInstance(15).setReduce("+", 7).setReduce("-", 7).setReduce("*", 7).setReduce("/", 7).setReduce(")", 7).setReduce("#", 7);
 	}
-	public void setRules() {
+	private void setRules() {
 		Rule.getInstance(0).setRule("S", "E");
 		Rule.getInstance(1).setRule("E", "E+T");
 		Rule.getInstance(2).setRule("E", "E-T");
@@ -181,31 +202,5 @@ public class Parser {
 		default:
 			return token.getValue();
 		}
-	}
-	public Expression parse() throws TokenizeException, ParseException {
-		initialize();
-		Stack<String> symbols = new Stack<String>();
-		Stack<Closure> statuses = new Stack<Closure>();
-		Stack<Expression> expressions = new Stack<Expression>();
-		statuses.push(Closure.getInstance(0));
-		consume();
-		String curSymbol = getSymbol(curToken);
-		while(!(curToken.isEnd() && statuses.peek().id == 0)) {
-			Closure curStat = statuses.peek();
-			if (curStat.canShift(curSymbol)) {
-				statuses.push(curStat.shift(curSymbol));
-				symbols.push(curSymbol);
-				if (curToken.isNumber())
-					expressions.push(new Constant(curToken));
-				if (!nonTerminal(curSymbol)) 
-					consume();
-				curSymbol = getSymbol(curToken);
-			} else if (curStat.canReduce(curSymbol)) {
-					curSymbol = reduceBy(curStat.reduce(curSymbol), statuses, symbols, expressions);
-			} else {
-				throw new ParseException(scanner.getCurIndex(), curToken, scanner.getCurString());
-			}
-		}
-		return expressions.pop();
 	}
 }

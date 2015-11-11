@@ -6,6 +6,7 @@ import java.io.InputStream;
 import abstractSyntaxTrees.*;
 
 import syntaxAnalysis.ParseException;
+import syntaxAnalysis.Parser;
 import syntaxAnalysis.Token;
 import syntaxAnalysis.TokenType;
 import syntaxAnalysis.TokenizeException;
@@ -22,24 +23,18 @@ import syntaxAnalysis.Lexer;
  * T' -> *FT' | /FT' | epsilon    select = { * | / | follow(T') = [+, -, ), #] }
  * F -> (E) | int  								select = { ( | int }
  */
-public class Parser {
-	private Lexer scanner;
-	private Token curToken = null;
-	public Parser(InputStream in) throws IOException {
-		scanner = new Lexer(in);
+public class LL1Parser extends Parser{
+	public LL1Parser(Lexer scanner) {
+		super(scanner);
+		// TODO Auto-generated constructor stub
 	}
-	public Parser(Lexer scanner) {
-		this.scanner = scanner;
+	public LL1Parser(String s) throws IOException {
+		super(s);
+		// TODO Auto-generated constructor stub
 	}
-	public Parser(String s) throws IOException {
-		this.scanner = new Lexer(s);
-	}
-	private boolean consume() throws TokenizeException {
-		if (scanner.hasNext()) {
-			curToken = scanner.nextToken();
-			return true;
-		}
-		return false;
+	public LL1Parser(InputStream in) throws IOException {
+		super(in);
+		// TODO Auto-generated constructor stub
 	}
 	public Expression parse() throws TokenizeException, ParseException {
 		Expression expr = parseExpression();
@@ -54,7 +49,7 @@ public class Parser {
 	 * @throws TokenizeException 
 	 * @throws ParseException 
 	 */
-	public Expression parseExpression() throws TokenizeException, ParseException {
+	private Expression parseExpression() throws TokenizeException, ParseException {
 		consume();
 		if (curToken.getType() != TokenType.LPAREN && curToken.getType() != TokenType.NUMBER)
 			throw new ParseException(scanner.getCurIndex(), curToken, scanner.getCurString());
@@ -68,7 +63,7 @@ public class Parser {
 	 * @throws TokenizeException 
 	 * @throws ParseException 
 	 */
-	public Expression parseExprOp(Expression expr) throws TokenizeException, ParseException {
+	private Expression parseExprOp(Expression expr) throws TokenizeException, ParseException {
 		switch (curToken.getType()) {
 		case PLUS:
 			consume();
@@ -101,7 +96,7 @@ public class Parser {
 	 * @throws TokenizeException 
 	 * @throws ParseException 
 	 */
-	public Expression parseTerm() throws TokenizeException, ParseException {
+	private Expression parseTerm() throws TokenizeException, ParseException {
 		if (curToken.getType() != TokenType.LPAREN && curToken.getType() != TokenType.NUMBER)
 			throw new ParseException(scanner.getCurIndex(), curToken, scanner.getCurString());
 		Expression factor = parseFactor();
@@ -115,7 +110,7 @@ public class Parser {
 	 * @throws TokenizeException 
 	 * @throws ParseException 
 	 */
-	public Expression parseTermOp(Expression expr) throws TokenizeException, ParseException {
+	private Expression parseTermOp(Expression expr) throws TokenizeException, ParseException {
 		switch (curToken.getType()) {
 		case MULTIPLY:
 			consume();
@@ -149,7 +144,7 @@ public class Parser {
 	 * @throws TokenizeException 
 	 * @throws ParseException 
 	 */
-	public Expression parseFactor() throws TokenizeException, ParseException {
+	private Expression parseFactor() throws TokenizeException, ParseException {
 		switch (curToken.getType()) {
 		case LPAREN:
 			Expression expr = parseExpression();

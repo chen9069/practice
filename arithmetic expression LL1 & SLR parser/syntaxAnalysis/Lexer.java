@@ -7,24 +7,25 @@ import java.util.regex.Pattern;
 public class Lexer {
 	private InputStream in;
 	private StringBuilder curString = new StringBuilder();
-	private int index;
+	private transient int cursor;
 	private Character curChar = null;
 	private char[] input;
 	private boolean isReadFromString = false;
 
 	public Lexer(InputStream in) throws IOException {
 		this.in = in;
+		cursor = -1;
 		readNext();
-		index = 0;
 	}
 	public Lexer(String s) throws IOException {
 		this.isReadFromString = true;
-		this.input = s.replaceAll("\\s+", "").toCharArray();
-		this.index = -1;
+		//s = s.replaceAll("\\s+", "");
+		this.input = s.toCharArray();
+		this.cursor = -1;
 		readNext();
 	}
 	public int getCurIndex() {
-		return index;
+		return cursor;
 	}
 	public String getCurString() {
 		return curString.toString();
@@ -34,9 +35,10 @@ public class Lexer {
 	}
 	public Token nextToken() throws TokenizeException {
 		try {
+			skipWhitespaces();
 			if (curChar == Character.MIN_VALUE) {
 				curChar = null;
-				index ++;
+				cursor ++;
 				return new Token(TokenType.EOT, "");
 			}
 			else {
@@ -70,7 +72,7 @@ public class Lexer {
 					else if (Pattern.matches("^(" + TokenType.SYMBOL.regex + ")$", number.toString()))
 						return new Token(TokenType.SYMBOL, number.toString());
 					else
-						throw new TokenizeException(index, curString.toString());
+						throw new TokenizeException(cursor, curString.toString());
 				}
 			}
 
@@ -79,23 +81,22 @@ public class Lexer {
 			return new Token(TokenType.EOT, "$");
 		}
 	}
-
+	private void skipWhitespaces() throws IOException {
+		while (Character.isWhitespace(curChar) && readNext()) {}
+	}
 	private boolean readNext() throws IOException {
 		int c = -1;
-		index ++;
+		cursor ++;
 		if (!isReadFromString)
 			c = in.read();
-		else if (index < input.length)
-			c = input[index];
+		else if (cursor < input.length)
+			c = input[cursor];
 		if (c == -1) {
 			curChar = Character.MIN_VALUE;
+			curString.append(curChar);
 			return false;
 		} else {
 			curChar = (char) c;
-			if (Character.isWhitespace(curChar)) {
-				index --;
-				return readNext();
-			}
 			curString.append(curChar);
 		}
 		return true;

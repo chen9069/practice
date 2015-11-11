@@ -1,4 +1,5 @@
 import java.io.*;
+import java.util.regex.Pattern;
 
 import semanticAnalysis.Evaluator;
 import semanticAnalysis.Printer;
@@ -16,7 +17,7 @@ public class Test {
 	 */
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		String s = "10 +(21  -32	)*	((((4  3 ))    )/(	5  4+6	5-  76)* 8   7) /9 8";
+		String s = "  0+ 10 +(21  -32  )*  ((((43 ))  +(1234)  )/(	54+65-  76)* 87) /98-0 ";
 		System.out.println("Expression: " + s);
 		InputStream in;
 		Expression expr;
@@ -27,7 +28,17 @@ public class Test {
 			expr = ll1Parser.parse();
 			expr.accept(Printer.getInstance());
 			System.out.println("=" + expr.accept(Evaluator.getInstance()));
-
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (TokenizeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		try {
 			System.out.println("SLR:");
 			in = new ByteArrayInputStream(s.getBytes());
 			Parser slrParser = new syntaxAnalysis.SLR.SLRParser(in);

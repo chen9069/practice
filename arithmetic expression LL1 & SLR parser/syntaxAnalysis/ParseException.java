@@ -11,6 +11,7 @@ public class ParseException extends Exception{
 	public Token token;
 	public String value;
 	public String rule;
+	
 	public ParseException(int index, Token token, String value) {
 		super ("Unexpected token " + token + " near index " + index);
 		this.index = index;
@@ -21,7 +22,6 @@ public class ParseException extends Exception{
 		super("Unrecognized rule: " + rule + " near index " + index);
 		this.index = index;
 		this.rule = rule;
-		this.value = value;
 	}
 	public String getMessage() {
 		String message = super.getMessage();

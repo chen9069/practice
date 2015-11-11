@@ -17,18 +17,20 @@ public class Test {
 		// TODO Auto-generated method stub
 		String s = "10 +(21  -32	)*	((((4  3 ))    )/(	5  4+6	5-  76)* 8   7) /9 8";
 		System.out.println("Expression: " + s);
+		InputStream in;
+		Expression expr;
 		try {
 			System.out.println("LL1:");
-			InputStream in = new ByteArrayInputStream(s.getBytes());
-			syntaxAnalysis.LL1.Parser parser = new syntaxAnalysis.LL1.Parser(s);
-			Expression expr = parser.parse();
+			in = new ByteArrayInputStream(s.getBytes());
+			syntaxAnalysis.LL1.Parser ll1Parser = new syntaxAnalysis.LL1.Parser(s);
+			expr = ll1Parser.parse();
 			expr.accept(Printer.getInstance());
 			System.out.println("=" + expr.accept(Evaluator.getInstance()));
-			
+
 			System.out.println("SLR:");
-			InputStream in = new ByteArrayInputStream(s.getBytes());
-			syntaxAnalysis.SLR.Parser parser = new syntaxAnalysis.SLR.Parser(in);
-			Expression expr =	parser.parse();
+			in = new ByteArrayInputStream(s.getBytes());
+			syntaxAnalysis.SLR.Parser slrParser = new syntaxAnalysis.SLR.Parser(in);
+			expr = slrParser.parse();
 			expr.accept(Printer.getInstance());
 			System.out.println("=" + expr.accept(Evaluator.getInstance()));
 		} catch (IOException e) {

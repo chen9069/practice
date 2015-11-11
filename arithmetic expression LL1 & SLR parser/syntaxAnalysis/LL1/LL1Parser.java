@@ -30,11 +30,9 @@ public class LL1Parser extends Parser{
 	}
 	public LL1Parser(String s) throws IOException {
 		super(s);
-		// TODO Auto-generated constructor stub
 	}
 	public LL1Parser(InputStream in) throws IOException {
 		super(in);
-		// TODO Auto-generated constructor stub
 	}
 	public Expression parse() throws TokenizeException, ParseException {
 		Expression expr = parseExpression();
